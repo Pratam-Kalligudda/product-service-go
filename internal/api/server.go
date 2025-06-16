@@ -5,6 +5,8 @@ import (
 
 	"github.com/Pratam-Kalligudda/product-service-go/config"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/api/rest"
+	"github.com/Pratam-Kalligudda/product-service-go/internal/api/rest/handler"
+	"github.com/Pratam-Kalligudda/product-service-go/internal/domain"
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -20,7 +22,7 @@ func SetupServer(config config.ApiConfig) {
 	}
 
 	log.Print("connection succesfull")
-	db.AutoMigrate()
+	db.AutoMigrate(&domain.Product{}, &domain.Category{})
 
 	httpHandler := rest.HTTPHandler{
 		DB:  db,
@@ -33,6 +35,7 @@ func SetupServer(config config.ApiConfig) {
 
 }
 
-func NewHandlerSetup(handler rest.HTTPHandler) {
+func NewHandlerSetup(api rest.HTTPHandler) {
 	// provide product handler setup method here
+	handler.SetupProductHandler(api)
 }

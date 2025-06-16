@@ -6,14 +6,14 @@ import (
 )
 
 type ProductRepository interface {
-	CreateProduct(any) error
-	UpdateProduct(uint) error
+	CreateProduct(domain.Product) error
+	UpdateProduct(domain.Product) error
 	DeleteProduct(uint) error
 	FindProductById(uint) (domain.Product, error)
 	FindProductByCategory(uint) ([]domain.Product, error)
 	FindAllProduct() ([]domain.Product, error)
 	// SearchProduct(string) ([]domain.Product, error)
-	AddCategory(any) error
+	AddCategory(domain.Category) error
 	GetCategories() ([]domain.Category, error)
 }
 
@@ -25,27 +25,35 @@ func NewProductRepository(db *gorm.DB) ProductRepository {
 	return &productRepository{db}
 }
 
-func (r *productRepository) CreateProduct(product any) error {
-	return nil
+func (r *productRepository) CreateProduct(product domain.Product) error {
+	return r.db.Create(&product).Error
 }
-func (r *productRepository) UpdateProduct(id uint) error {
-	return nil
+func (r *productRepository) UpdateProduct(product domain.Product) error {
+	return r.db.Model(product).Updates(product).Error
 }
 func (r *productRepository) DeleteProduct(id uint) error {
-	return nil
+	return r.db.Delete(&domain.Product{}, "id = ?", id).Error
 }
 func (r *productRepository) FindAllProduct() ([]domain.Product, error) {
-	return nil, nil
+	var products []domain.Product
+	err := r.db.Find(&products).Error
+	return products, err
 }
 func (r *productRepository) FindProductByCategory(catId uint) ([]domain.Product, error) {
-	return nil, nil
+	var products []domain.Product
+	err := r.db.Find(&products, "category_id = ?", catId).Error
+	return products, err
 }
 func (r *productRepository) FindProductById(id uint) (domain.Product, error) {
-	return domain.Product{}, nil
+	var product domain.Product
+	err := r.db.Find(&product, "id = ?", id).Error
+	return product, err
 }
-func (r *productRepository) AddCategory(cat any) error {
-	return nil
+func (r *productRepository) AddCategory(cat domain.Category) error {
+	return r.db.Model(&domain.Category{}).Create(&cat).Error
 }
 func (r *productRepository) GetCategories() ([]domain.Category, error) {
-	return nil, nil
+	var categories []domain.Category
+	err := r.db.Model(&domain.Category{}).Find(&categories).Error
+	return categories, err
 }
