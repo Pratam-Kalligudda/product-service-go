@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/Pratam-Kalligudda/product-service-go/internal/api/rest"
-	"github.com/Pratam-Kalligudda/product-service-go/internal/helper"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/repository"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/service"
 	"github.com/gofiber/fiber/v3"
@@ -16,20 +15,24 @@ func NewProductHandler(service *service.ProductService) ProductHandler {
 	return ProductHandler{service: service}
 }
 
-func SetupProductHandler(api rest.HTTPHandler) {
-	app := api.App
+func SetupProductHandler(rh rest.HTTPHandler) {
+	app := rh.App
 
-	db := repository.NewProductRepository(api.DB)
-	svc := service.NewProductService(db, helper.Helper{Secret: api.Config.SECRET})
+	db := repository.NewProductRepository(rh.DB)
+	svc := service.NewProductService(db, rh.Helper)
 	handler := NewProductHandler(svc)
-
-	app.Get("/products", handler.ListProducts)
-	app.Get("/products/:id", handler.GetProductByID)
-	app.Post("/products", handler.AddProduct)
-	app.Put("/products/:id", handler.UpdateProduct)
-	app.Delete("/products/:id", handler.DeleteProduct)
-	app.Get("/categories", handler.ListCategories)
-	app.Post("/categories", handler.AddCategory)
+	pubRoute := app.Group("/products")
+	pubRoute.Get("/health", func(ctx fiber.Ctx) error {
+		return ctx.Status(fiber.StatusAccepted).JSON(fiber.Map{"message": "service is healthy"})
+	})
+	pubRoute.Get("/", handler.ListProducts)
+	pubRoute.Get("/categories", handler.ListCategories)
+	pvtRoute := pubRoute.Group("/", rh.Helper.Authorize)
+	pvtRoute.Post("/", handler.AddProduct)
+	pvtRoute.Post("/categories", handler.AddCategory)
+	pubRoute.Get("/:id", handler.GetProductByID)
+	pvtRoute.Put("/:id", handler.UpdateProduct)
+	pvtRoute.Delete("/:id", handler.DeleteProduct)
 
 	// app.Listen(api.Config.PORT)
 }

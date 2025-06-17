@@ -7,14 +7,16 @@ import (
 	"github.com/Pratam-Kalligudda/product-service-go/internal/api/rest"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/api/rest/handler"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/domain"
+	"github.com/Pratam-Kalligudda/product-service-go/internal/helper"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func SetupServer(config config.ApiConfig) {
 	app := fiber.New()
-
+	app.Use(logger.New())
 	db, err := gorm.Open(postgres.Open(config.DSN), &gorm.Config{})
 	if err != nil {
 		log.Fatal("error while connecting db")
@@ -25,8 +27,9 @@ func SetupServer(config config.ApiConfig) {
 	db.AutoMigrate(&domain.Product{}, &domain.Category{})
 
 	httpHandler := rest.HTTPHandler{
-		DB:  db,
-		App: app,
+		DB:     db,
+		App:    app,
+		Helper: helper.Helper{Secret: config.SECRET},
 	}
 
 	NewHandlerSetup(httpHandler)

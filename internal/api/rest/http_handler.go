@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/Pratam-Kalligudda/product-service-go/config"
+	"github.com/Pratam-Kalligudda/product-service-go/internal/helper"
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
@@ -9,5 +9,5 @@ import (
 type HTTPHandler struct {
 	DB     *gorm.DB
 	App    *fiber.App
-	Config config.ApiConfig
+	Helper helper.Helper
 }
