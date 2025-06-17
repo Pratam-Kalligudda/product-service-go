@@ -10,7 +10,7 @@ import (
 
 type ApiConfig struct {
 	PORT   string
-	DSN    string
+	DNS    string
 	SECRET string
 }
 
@@ -28,8 +28,8 @@ func SetupConfig() (ApiConfig, error) {
 		return ApiConfig{}, errors.New("couldnt load port from env")
 	}
 
-	dsn := os.Getenv("DSN")
-	if len(dsn) < 0 {
+	dns := os.Getenv("DNS")
+	if len(dns) < 0 {
 		return ApiConfig{}, errors.New("couldnt load dsn from env")
 	}
 
@@ -40,7 +40,7 @@ func SetupConfig() (ApiConfig, error) {
 
 	return ApiConfig{
 		PORT:   port,
-		DSN:    dsn,
+		DNS:    dns,
 		SECRET: secret,
 	}, nil
 }

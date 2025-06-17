@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/Pratam-Kalligudda/product-service-go/internal/api/rest"
+	"github.com/Pratam-Kalligudda/product-service-go/internal/domain"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/repository"
 	"github.com/Pratam-Kalligudda/product-service-go/internal/service"
 	"github.com/gofiber/fiber/v3"
@@ -38,14 +39,36 @@ func SetupProductHandler(rh rest.HTTPHandler) {
 }
 
 func (h *ProductHandler) ListProducts(ctx fiber.Ctx) error {
-	return nil
+	products, err := h.service.GetProducts()
+	if err != nil {
+		return ctx.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{"message": err.Error()})
+	}
+	return ctx.Status(fiber.StatusOK).JSON(products)
 }
 
 func (h *ProductHandler) GetProductByID(ctx fiber.Ctx) error {
 	return nil
 }
 func (h *ProductHandler) AddProduct(ctx fiber.Ctx) error {
-	return nil
+	var product domain.Product
+	err := ctx.Bind().Body(&product)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "error while binding :" + err.Error()})
+	}
+	// userId := ctx.Locals("userId", 0)
+	// if userId == 0 {
+	// 	return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "error with userID"})
+	// }
+
+	product, err = h.service.AddProduct(product)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "error while adding :" + err.Error()})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "product added succesfully :",
+		"product": product,
+	})
 }
 func (h *ProductHandler) UpdateProduct(ctx fiber.Ctx) error {
 	return nil
@@ -57,5 +80,23 @@ func (h *ProductHandler) ListCategories(ctx fiber.Ctx) error {
 	return nil
 }
 func (h *ProductHandler) AddCategory(ctx fiber.Ctx) error {
-	return nil
+	var category domain.Category
+	err := ctx.Bind().Body(&category)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "error while binding :" + err.Error()})
+	}
+	// userId := ctx.Locals("userId", 0)
+	// if userId == 0 {
+	// 	return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "error with userID"})
+	// }
+
+	category, err = h.service.AddCategory(category)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "error while adding :" + err.Error()})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":  "category added succesfully :",
+		"category": category,
+	})
 }

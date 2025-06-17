@@ -17,7 +17,7 @@ import (
 func SetupServer(config config.ApiConfig) {
 	app := fiber.New()
 	app.Use(logger.New())
-	db, err := gorm.Open(postgres.Open(config.DSN), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(config.DNS), &gorm.Config{})
 	if err != nil {
 		log.Fatal("error while connecting db")
 		return
@@ -31,10 +31,13 @@ func SetupServer(config config.ApiConfig) {
 		App:    app,
 		Helper: helper.Helper{Secret: config.SECRET},
 	}
-
+	log.Print("migration succesfull")
 	NewHandlerSetup(httpHandler)
 
-	app.Listen(config.PORT)
+	err = app.Listen(config.PORT)
+	if err != nil {
+		log.Print(err)
+	}
 
 }
 

@@ -6,15 +6,15 @@ import (
 )
 
 type ProductRepository interface {
-	CreateProduct(domain.Product) error
-	UpdateProduct(domain.Product) error
+	CreateProduct(*domain.Product) error
+	UpdateProduct(*domain.Product) error
 	DeleteProduct(uint) error
 	FindProductById(uint) (domain.Product, error)
 	FindProductByName(string) (domain.Product, error)
 	FindProductByCategory(uint) ([]domain.Product, error)
 	FindAllProduct() ([]domain.Product, error)
 	// SearchProduct(string) ([]domain.Product, error)
-	AddCategory(domain.Category) error
+	AddCategory(*domain.Category) error
 	GetCategories() ([]domain.Category, error)
 	GetCategoryByID(uint) (domain.Category, error)
 	GetCategoryByName(string) (domain.Category, error)
@@ -28,10 +28,10 @@ func NewProductRepository(db *gorm.DB) ProductRepository {
 	return &productRepository{db}
 }
 
-func (r *productRepository) CreateProduct(product domain.Product) error {
+func (r *productRepository) CreateProduct(product *domain.Product) error {
 	return r.db.Create(&product).Error
 }
-func (r *productRepository) UpdateProduct(product domain.Product) error {
+func (r *productRepository) UpdateProduct(product *domain.Product) error {
 	return r.db.Model(&product).Updates(&product).Error
 }
 func (r *productRepository) DeleteProduct(id uint) error {
@@ -57,7 +57,7 @@ func (r *productRepository) FindProductByName(name string) (domain.Product, erro
 	err := r.db.Model(&product).First(&product, "name = ?", name).Error
 	return product, err
 }
-func (r *productRepository) AddCategory(cat domain.Category) error {
+func (r *productRepository) AddCategory(cat *domain.Category) error {
 	return r.db.Model(&domain.Category{}).Create(&cat).Error
 }
 func (r *productRepository) GetCategories() ([]domain.Category, error) {

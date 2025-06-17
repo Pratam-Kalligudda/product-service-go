@@ -60,9 +60,9 @@ func (s *ProductService) GetProductByCategory(catId uint) ([]domain.Product, err
 
 	return products, nil
 }
-func (s *ProductService) UpdateProduct(id uint, uptProd dto.UpdateProductDTO) error {
+func (s *ProductService) UpdateProduct(id uint, uptProd dto.UpdateProductDTO) (domain.Product, error) {
 	if id < 0 {
-		return errors.New("id cannot be negitive")
+		return domain.Product{}, errors.New("id cannot be negitive")
 	}
 	var product domain.Product
 	if uptProd.Name != nil {
@@ -80,17 +80,17 @@ func (s *ProductService) UpdateProduct(id uint, uptProd dto.UpdateProductDTO) er
 	if uptProd.CategoryID != nil {
 		_, err := s.Repo.GetCategoryByID(*uptProd.CategoryID)
 		if err != nil {
-			return errors.New("no category by that id first create the category")
+			return domain.Product{}, errors.New("no category by that id first create the category")
 		}
 		product.CategoryID = *uptProd.CategoryID
 	}
 
-	if err := s.Repo.UpdateProduct(product); err != nil {
+	if err := s.Repo.UpdateProduct(&product); err != nil {
 		jsn, _ := json.MarshalIndent(product, "", "\t")
-		return errors.New("error while updating product :" + err.Error() + " : " + string(jsn))
+		return domain.Product{}, errors.New("error while updating product :" + err.Error() + " : " + string(jsn))
 	}
 
-	return nil
+	return product, nil
 }
 func (s *ProductService) DeleteProduct(id uint) error {
 	if id < 0 {
@@ -103,22 +103,22 @@ func (s *ProductService) DeleteProduct(id uint) error {
 
 	return nil
 }
-func (s *ProductService) AddProduct(product domain.Product) error {
+func (s *ProductService) AddProduct(product domain.Product) (domain.Product, error) {
 	_, err := s.Repo.GetCategoryByID(product.CategoryID)
 	if err != nil {
-		return errors.New("no category by that id first create the category")
+		return domain.Product{}, errors.New("no category by that id first create the category")
 	}
 	_, err = s.Repo.FindProductByName(product.Name)
 	if err == nil {
-		return errors.New("product with the name already exists")
+		return domain.Product{}, errors.New("product with the name already exists")
 	}
 
-	err = s.Repo.CreateProduct(product)
+	err = s.Repo.CreateProduct(&product)
 	if err != nil {
-		return errors.New("error while creating product : " + err.Error())
+		return domain.Product{}, errors.New("error while creating product : " + err.Error())
 	}
 
-	return nil
+	return product, nil
 }
 func (s *ProductService) GetCategories() ([]domain.Category, error) {
 	categories, err := s.Repo.GetCategories()
@@ -131,10 +131,11 @@ func (s *ProductService) GetCategories() ([]domain.Category, error) {
 
 	return categories, nil
 }
-func (s *ProductService) AddCategory(category domain.Category) error {
+func (s *ProductService) AddCategory(category domain.Category) (domain.Category, error) {
 	_, err := s.Repo.GetCategoryByName(category.Name)
 	if err == nil {
-		return errors.New(category.Name + " category already exists")
+		return domain.Category{}, errors.New(category.Name + " category already exists")
 	}
-	return s.Repo.AddCategory(category)
+	err = s.Repo.AddCategory(&category)
+	return category, err
 }

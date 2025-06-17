@@ -29,12 +29,17 @@ func (h Helper) Authorize(ctx fiber.Ctx) error {
 	}
 
 	tokenArr := ctx.GetReqHeaders()["Authorization"]
-	if len(tokenArr) < 0 {
+	if len(tokenArr) <= 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid token",
 		})
 	}
 	tokenSep := strings.Split(tokenArr[0], " ")
+	if len(tokenSep) < 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
 	if tokenSep[0] != "Bearer" || len(tokenSep[1]) <= 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid token",
