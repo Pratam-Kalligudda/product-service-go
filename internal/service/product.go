@@ -42,6 +42,9 @@ func (s *ProductService) GetProductByID(id uint) (domain.Product, error) {
 		return domain.Product{}, errors.New("error while finding product: " + err.Error())
 	}
 
+	if product.ID == 0 {
+		return domain.Product{}, errors.New("product not found")
+	}
 	return product, nil
 }
 func (s *ProductService) GetProductByCategory(catId uint) ([]domain.Product, error) {
@@ -84,10 +87,15 @@ func (s *ProductService) UpdateProduct(id uint, uptProd dto.UpdateProductDTO) (d
 		}
 		product.CategoryID = *uptProd.CategoryID
 	}
-
+	product.ID = id
 	if err := s.Repo.UpdateProduct(&product); err != nil {
 		jsn, _ := json.MarshalIndent(product, "", "\t")
 		return domain.Product{}, errors.New("error while updating product :" + err.Error() + " : " + string(jsn))
+	}
+
+	product, err := s.Repo.FindProductById(id)
+	if err != nil {
+		return domain.Product{}, errors.New("error while finding product :" + err.Error())
 	}
 
 	return product, nil
